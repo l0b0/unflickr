@@ -1,18 +1,9 @@
 #!/usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 """
-Offlickr
-Hugo Haas <hugo@larve.net> -- http://larve.net/people/hugo/
-Homepage: http://code.google.com/p/offlickr/
+unflickr
 License: GPLv2
 
-Daniel Drucker <dmd@3e.org> contributed:
-  * wget patch
-  * backup of videos as well
-  * updated to Beej's Flickr API version 1.2 (required)
-
-Beraldo Leal <beraldo at beraldoleal.com> contributed:
-  * Download photos in set with -s and -p option
 """
 
 import sys
@@ -46,7 +37,7 @@ def __test_failure(rsp):
     else:
         return False
 
-class Offlickr:
+class unflickr:
     """Flickr communications object"""
 
     def __init__(
@@ -58,7 +49,7 @@ class Offlickr:
         dryrun=False,
         verbose=False,
         ):
-        """Instantiates an Offlickr object
+        """Instantiates an unflickr object
         An API key is needed, as well as an API secret and a user id."""
 
         self.flickr_api_key = key
@@ -305,7 +296,7 @@ class Offlickr:
 def usage():
     """Command line interface usage"""
 
-    print """Usage: Offlickr.py -i <flickr Id>
+    print """Usage: unflickr.py -i <flickr Id>
 Backs up Flickr photos and metadata
 Options:
   -f <date>     beginning of the date range
@@ -789,7 +780,7 @@ def main():
         print target + ' is not a directory; please fix that.'
         sys.exit(1)
 
-    offlickr = Offlickr(
+    offlickr = unflickr(
         FLICKR_API_KEY,
         FLICKR_SECRET,
         flickr_user_id,
