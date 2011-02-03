@@ -1,25 +1,21 @@
-Offlickr2
----------
+unflickr
+--------
 
-Offlickr2 is a command line program to backup Flickr accounts.
+unflickr is a command line program to backup Flickr accounts.
 
 Installation
 ------------
 
-Run:
-
-./setup.sh
+[ write here ]
 
 Running the software
 --------------------
 
-See the help information with:
-
-php ./Offlickr2.php -h
+[ write here ]
 
 FAQ
 ---
 
-- Why PHP?
+- Why a fork?
 
-Because PHP is commonly available on Web hosting environments.
+Because we dont like PHP.
