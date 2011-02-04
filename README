@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 unflickr
 --------
 
@@ -12,10 +13,22 @@ Running the software
 --------------------
 
 [ write here ]
+=======
+offlickr-py is a command line program to backup Flickr accounts.
 
-FAQ
----
+Installation
 
+sudo easy_install offlickr-py
+>>>>>>> 88f69cb588ad9f149af5d164bdbad04a4b93e6c7
+
+Usage
+
+<<<<<<< HEAD
 - Why a fork?
 
 Because we dont like PHP.
+=======
+offlickr <username>
+
+Based on Offlickr2 <https://github.com/hugoh/Offlickr2>
+>>>>>>> 88f69cb588ad9f149af5d164bdbad04a4b93e6c7
