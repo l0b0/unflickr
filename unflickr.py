@@ -260,7 +260,7 @@ class unflickr:
 
         for size in rsp.sizes[0].size:
             if size['label'] == 'Original':
-                source = size['source']a
+                source = size['source']
 
         for size in rsp.sizes[0].size:
             if size['label'] == 'Video Original':
