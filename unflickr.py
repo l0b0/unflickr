@@ -345,14 +345,14 @@ def file_write(dryrun, directory, filename, string):
 
 class PhotoBackupThread(threading.Thread):
 
-    def __init__(self, sem, index, total, uid, title, offlickr, target, 
+    def __init__(self, sem, index, total, uid, title, unflickr, target, 
                  hash_level, get_photos, do_not_redownload, overwrite_photos):
         self.sem = sem
         self.index = index
         self.total = total
         self.uid = uid
         self.title = title
-        self.offlickr = offlickr
+        self.unflickr = unflickr
         self.target = target
         self.hash_level = hash_level
         self.get_photos = get_photos
@@ -362,12 +362,12 @@ class PhotoBackupThread(threading.Thread):
 
     def run(self):
         backup_photo(self.index, self.total, self.uid, self.title, self.target,
-                     self.hash_level, self.offlickr, self.do_not_redownload,
+                     self.hash_level, self.unflickr, self.do_not_redownload,
                      self.get_photos, self.overwrite_photos)
         self.sem.release()
 
 
-def backup_photo(index, total, uid, title, target, hash_level, offlickr,
+def backup_photo(index, total, uid, title, target, hash_level, unflickr,
                  do_not_redownload, get_photos, overwrite_photos):
 
     print '%d/%d: %s: %s' % (index, total, uid, title.encode('utf-8'))
@@ -381,7 +381,7 @@ def backup_photo(index, total, uid, title, target, hash_level, offlickr,
         return
 
     # Get Metadata
-    metadata_results = offlickr.getPhotoMetadata(uid)
+    metadata_results = unflickr.getPhotoMetadata(uid)
     if metadata_results == None:
         print 'Failed!'
         sys.exit(2)
@@ -391,17 +391,17 @@ def backup_photo(index, total, uid, title, target, hash_level, offlickr,
     t_dir = target_dir(target, hash_level, uid)
 
     # Write metadata
-    file_write(offlickr.dryrun, t_dir, uid + '.xml', metadata)
+    file_write(unflickr.dryrun, t_dir, uid + '.xml', metadata)
 
     # Get comments
-    photo_comments = offlickr.getPhotoComments(uid)
-    file_write(offlickr.dryrun, t_dir, uid + '-comments.xml', photo_comments)
+    photo_comments = unflickr.getPhotoComments(uid)
+    file_write(unflickr.dryrun, t_dir, uid + '-comments.xml', photo_comments)
 
     # Do we want the picture too?
     if not get_photos:
         return
 
-    [source, is_video] = offlickr.getOriginalPhoto(uid)
+    [source, is_video] = unflickr.getOriginalPhoto(uid)
 
     if source == None:
         print 'Oopsie, no photo found'
@@ -430,11 +430,11 @@ def backup_photo(index, total, uid, title, target, hash_level, offlickr,
 
     if not is_private_failure:
         print 'Retrieving ' + source + ' as ' + filename
-        offlickr.download_url(source, t_dir, filename)
+        unflickr.download_url(source, t_dir, filename)
         print 'Done downloading %s' % filename
 
 
-def backup_photos(threads, offlickr, target, hash_level, date_low, date_high,
+def backup_photos(threads, unflickr, target, hash_level, date_low, date_high,
                   get_photos, do_not_redownload, overwrite_photos):
     """Back photos up for a particular time range"""
 
@@ -443,7 +443,7 @@ def backup_photos(threads, offlickr, target, hash_level, date_low, date_high,
         print 'For incremental backups, the current time is %.0f' % now
         print "You can rerun the program with '-f %.0f'" % now
 
-    photos = offlickr.get_photo_list(date_low, date_high)
+    photos = unflickr.get_photo_list(date_low, date_high)
     if photos == None:
         print 'No photos found'
         sys.exit(1)
@@ -466,7 +466,7 @@ def backup_photos(threads, offlickr, target, hash_level, date_low, date_high,
                                            total,
                                            pid,
                                            photo['title'],
-                                           offlickr,
+                                           unflickr,
                                            target,
                                            hash_level,
                                            get_photos,
@@ -475,11 +475,11 @@ def backup_photos(threads, offlickr, target, hash_level, date_low, date_high,
             downloader.start()
         else:
             backup_photo(index, total, pid, photo['title'], target, hash_level,
-                         offlickr, do_not_redownload, get_photos,
+                         unflickr, do_not_redownload, get_photos,
                          overwrite_photos)
 
 
-def backup_location(offlickr, target, hash_level, date_high, 
+def backup_location(unflickr, target, hash_level, date_high, 
                     do_not_redownload):
     """Back photo locations up for a particular time range"""
 
@@ -488,7 +488,7 @@ def backup_location(offlickr, target, hash_level, date_high,
         print 'For incremental backups, the current time is %.0f' % now
         print "You can rerun the program with '-f %.0f'" % now
 
-    photos = offlickr.get_geotagged_photo_list()
+    photos = unflickr.get_geotagged_photo_list()
     if photos == None:
         print 'No photos found'
         sys.exit(1)
@@ -505,28 +505,28 @@ def backup_location(offlickr, target, hash_level, date_high,
             target_directory + pid + '-location-permissions.xml'):
             print pid + ': Already there'
             continue
-        location = offlickr.get_photolocation(pid)
+        location = unflickr.get_photolocation(pid)
         target_dst = target_dir(target, hash_level, pid)
         if location == None:
             print 'Failed!'
         else:
-            file_write(offlickr.dryrun, target_dst, pid + '-location.xml',
+            file_write(unflickr.dryrun, target_dst, pid + '-location.xml',
                        location)
 
-        location_permission = offlickr.get_photolocation_permission(pid)
+        location_permission = unflickr.get_photolocation_permission(pid)
         if location_permission == None:
             print 'Failed!'
         else:
-            file_write(offlickr.dryrun, target_dst, 
+            file_write(unflickr.dryrun, target_dst, 
                        pid + '-location-permissions.xml',
                        location_permission)
 
 
-def backup_photosets(threads, offlickr, get_photos, target, hash_level,
+def backup_photosets(threads, unflickr, get_photos, target, hash_level,
                      do_not_redownload, overwrite_photos):
     """Back photosets up"""
 
-    photosets = offlickr.get_photosetList()
+    photosets = unflickr.get_photosetList()
     if photosets == None:
         print 'No photosets found'
         sys.exit(0)
@@ -544,25 +544,25 @@ def backup_photosets(threads, offlickr, get_photos, target, hash_level,
                                  photoset.title[0].text.encode('utf-8'))
 
         # Get Metadata
-        info = offlickr.get_photosetInfo(pid, offlickr.fapi.photosets_getInfo)
+        info = unflickr.get_photosetInfo(pid, unflickr.fapi.photosets_getInfo)
 
         if info == None:
             print 'Failed!'
         else:
             target_dst = target_dir(target + '/sets/' + pid, hash_level, pid)
-            file_write(offlickr.dryrun, target_dst, 'set_' + pid + '_info.xml',
+            file_write(unflickr.dryrun, target_dst, 'set_' + pid + '_info.xml',
                        info)
 
-        photos = offlickr.get_photosetInfo(pid, 
-                                           offlickr.fapi.photosets_get_photos)
+        photos = unflickr.get_photosetInfo(pid, 
+                                           unflickr.fapi.photosets_get_photos)
         if photos == None:
             print 'Failed!'
         else:
             target_dst = target_dir(target + '/sets/' + pid, hash_level, pid)
-            file_write(offlickr.dryrun, target_dst,
+            file_write(unflickr.dryrun, target_dst,
                        'set_' + pid + '_photos.xml', photos)
 
-        photos = offlickr.get_photosetPhotos(pid)
+        photos = unflickr.get_photosetPhotos(pid)
 
         if photos == None:
             print 'No photos found in this photoset'
@@ -588,7 +588,7 @@ def backup_photosets(threads, offlickr, get_photos, target, hash_level,
                                                    total,
                                                    photoid,
                                                    photo['title'],
-                                                   offlickr,
+                                                   unflickr,
                                                    target_dst,
                                                    hash_level,
                                                    get_photos,
@@ -597,7 +597,7 @@ def backup_photosets(threads, offlickr, get_photos, target, hash_level,
                     downloader.start()
                 else:
                     backup_photo(index, total, photoid, photo['title'],
-                                 target_dst, hash_level, offlickr,
+                                 target_dst, hash_level, unflickr,
                                  do_not_redownload, get_photos,
                                  overwrite_photos)
 
@@ -685,17 +685,17 @@ def main():
         print target + ' is not a directory; please fix that.'
         sys.exit(1)
 
-    offlickr = unflickr(FLICKR_API_KEY, FLICKR_SECRET, flickr_user_id,
+    unflickr = unflickr(FLICKR_API_KEY, FLICKR_SECRET, flickr_user_id,
                         httplib, dryrun, verbose)
 
     if photosets:
-        backup_photosets(threads, offlickr, get_photos, target, hash_level,
+        backup_photosets(threads, unflickr, get_photos, target, hash_level,
                          do_not_redownload, overwrite_photos)
     elif photo_locations:
-        backup_location(offlickr, target, hash_level, date_high,
+        backup_location(unflickr, target, hash_level, date_high,
                         do_not_redownload)
     else:
-        backup_photos(threads, offlickr, target, hash_level, date_low,
+        backup_photos(threads, unflickr, target, hash_level, date_low,
                       date_high, get_photos, do_not_redownload,
                       overwrite_photos)
 
