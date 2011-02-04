@@ -25,16 +25,7 @@ FLICKR_API_KEY = '1391fcd0a9780b247cd6a101272acf71'
 FLICKR_SECRET = 'fd221d0336de3b6d'
 
 
-def __test_failure(rsp):
-    """Returns whether the previous call was successful"""
-
-    if rsp['stat'] == 'fail':
-        print 'Error!'
-        return True
-    else:
-        return False
-
-class unflickr:
+class Unflickr:
     """Flickr communications object"""
 
     def __init__(self, key, secret, uid, httplib=None, dryrun=False,
@@ -64,6 +55,16 @@ class unflickr:
         self.dryrun = dryrun
         self.verbose = verbose
 
+    def __test_failure(self, rsp):
+        """Returns whether the previous call was successful"""
+
+        if rsp['stat'] == 'fail':
+            print 'Error!'
+            return True
+        else:
+            return False
+
+
     def get_photo_list(self, date_low, date_high):
         """Returns a list of photo given a time frame"""
 
@@ -83,7 +84,7 @@ class unflickr:
                                           page=str(index),
                                           min_upload_date=date_low,
                                           max_upload_date=date_high)
-            if __test_failure(rsp):
+            if self.__test_failure(rsp):
                 return None
 
             if rsp.photos[0]['total'] == '0':
@@ -115,7 +116,7 @@ class unflickr:
                                                   user_id=self.flickr_user_id,
                                                   per_page=str(flickr_max),
                                                   page=str(index))
-            if __test_failure(rsp):
+            if self.__test_failure(rsp):
                 return None
 
             if rsp.photos[0]['total'] == '0':
@@ -137,7 +138,7 @@ class unflickr:
                                                auth_token=self.token,
                                                photo_id=pid)
 
-        if __test_failure(rsp):
+        if self.__test_failure(rsp):
             return None
 
         doc = libxml2.parseDoc(rsp.xml)
@@ -153,7 +154,7 @@ class unflickr:
         rsp = self.fapi.photos_geo_getPerms(api_key=self.flickr_api_key,
                                             auth_token=self.token,
                                             photo_id=pid)
-        if __test_failure(rsp):
+        if self.__test_failure(rsp):
             return None
 
         doc = libxml2.parseDoc(rsp.xml)
@@ -167,7 +168,7 @@ class unflickr:
         rsp = self.fapi.photosets_getList(api_key=self.flickr_api_key,
                                           auth_token=self.token,
                                           user_id=self.flickr_user_id)
-        if __test_failure(rsp):
+        if self.__test_failure(rsp):
             return None
 
         return rsp.photosets[0].photoset
@@ -180,7 +181,7 @@ class unflickr:
                                              user_id=self.flickr_user_id,
                                              photoset_id=pid)
 
-        if __test_failure(rsp):
+        if self.__test_failure(rsp):
             return None
 
         return rsp.photoset[0].photo
@@ -192,7 +193,7 @@ class unflickr:
                      auth_token=self.token,
                      photoset_id=pid)
 
-        if __test_failure(rsp):
+        if self.__test_failure(rsp):
             return None
 
         doc = libxml2.parseDoc(rsp.xml)
@@ -211,7 +212,7 @@ class unflickr:
         rsp = self.fapi.photos_getInfo(api_key=self.flickr_api_key,
                                        auth_token=self.token, 
                                        photo_id=pid)
-        if __test_failure(rsp):
+        if self.__test_failure(rsp):
             return None
 
         doc = libxml2.parseDoc(rsp.xml)
@@ -230,7 +231,7 @@ class unflickr:
             self.fapi.photos_comments_getList(api_key=self.flickr_api_key,
                                               auth_token=self.token, 
                                               photo_id=pid)
-        if __test_failure(rsp):
+        if self.__test_failure(rsp):
             return None
 
         doc = libxml2.parseDoc(rsp.xml)
@@ -245,7 +246,7 @@ class unflickr:
         rsp = self.fapi.photos_getSizes(api_key=self.flickr_api_key,
                                         auth_token=self.token, 
                                         photo_id=pid)
-        if __test_failure(rsp):
+        if self.__test_failure(rsp):
             return None
 
         return rsp
@@ -381,7 +382,7 @@ def backup_photo(index, total, uid, title, target, hash_level, unflickr,
         return
 
     # Get Metadata
-    metadata_results = unflickr.getPhotoMetadata(uid)
+    metadata_results = unflickr.get_photo_metadata(uid)
     if metadata_results == None:
         print 'Failed!'
         sys.exit(2)
@@ -394,14 +395,14 @@ def backup_photo(index, total, uid, title, target, hash_level, unflickr,
     file_write(unflickr.dryrun, t_dir, uid + '.xml', metadata)
 
     # Get comments
-    photo_comments = unflickr.getPhotoComments(uid)
+    photo_comments = unflickr.get_photo_comments(uid)
     file_write(unflickr.dryrun, t_dir, uid + '-comments.xml', photo_comments)
 
     # Do we want the picture too?
     if not get_photos:
         return
 
-    [source, is_video] = unflickr.getOriginalPhoto(uid)
+    [source, is_video] = unflickr.get_original_photo(uid)
 
     if source == None:
         print 'Oopsie, no photo found'
@@ -505,7 +506,7 @@ def backup_location(unflickr, target, hash_level, date_high,
             target_directory + pid + '-location-permissions.xml'):
             print pid + ': Already there'
             continue
-        location = unflickr.get_photolocation(pid)
+        location = unflickr.get_photo_location(pid)
         target_dst = target_dir(target, hash_level, pid)
         if location == None:
             print 'Failed!'
@@ -513,7 +514,7 @@ def backup_location(unflickr, target, hash_level, date_high,
             file_write(unflickr.dryrun, target_dst, pid + '-location.xml',
                        location)
 
-        location_permission = unflickr.get_photolocation_permission(pid)
+        location_permission = unflickr.get_photo_location_permission(pid)
         if location_permission == None:
             print 'Failed!'
         else:
@@ -526,7 +527,7 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
                      do_not_redownload, overwrite_photos):
     """Back photosets up"""
 
-    photosets = unflickr.get_photosetList()
+    photosets = Unflickr.get_photosetList()
     if photosets == None:
         print 'No photosets found'
         sys.exit(0)
@@ -544,7 +545,7 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
                                  photoset.title[0].text.encode('utf-8'))
 
         # Get Metadata
-        info = unflickr.get_photosetInfo(pid, unflickr.fapi.photosets_getInfo)
+        info = Unflickr.get_photosetInfo(pid, unflickr.fapi.photosets_getInfo)
 
         if info == None:
             print 'Failed!'
@@ -553,7 +554,7 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
             file_write(unflickr.dryrun, target_dst, 'set_' + pid + '_info.xml',
                        info)
 
-        photos = unflickr.get_photosetInfo(pid, 
+        photos = Unflickr.get_photosetInfo(pid, 
                                            unflickr.fapi.photosets_get_photos)
         if photos == None:
             print 'Failed!'
@@ -562,7 +563,7 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
             file_write(unflickr.dryrun, target_dst,
                        'set_' + pid + '_photos.xml', photos)
 
-        photos = unflickr.get_photosetPhotos(pid)
+        photos = Unflickr.get_photosetPhotos(pid)
 
         if photos == None:
             print 'No photos found in this photoset'
@@ -678,6 +679,7 @@ def main():
     # Check that we have a user id specified
     if flickr_user_id == None:
         print 'You need to specify a Flickr Id'
+        print 'Use --help for help.'
         sys.exit(1)
 
     # Check that the target directory exists
@@ -685,7 +687,7 @@ def main():
         print target + ' is not a directory; please fix that.'
         sys.exit(1)
 
-    unflickr = unflickr(FLICKR_API_KEY, FLICKR_SECRET, flickr_user_id,
+    unflickr = Unflickr(FLICKR_API_KEY, FLICKR_SECRET, flickr_user_id,
                         httplib, dryrun, verbose)
 
     if photosets:
