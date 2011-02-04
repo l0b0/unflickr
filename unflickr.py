@@ -176,10 +176,10 @@ class Unflickr:
     def get_photoset_photos(self, pid):
         """Returns a list of photos in a photosets"""
 
-        rsp = self.fapi.photosets_get_photos(api_key=self.flickr_api_key,
-                                             auth_token=self.token,
-                                             user_id=self.flickr_user_id,
-                                             photoset_id=pid)
+        rsp = self.fapi.photosets_getPhotos(api_key=self.flickr_api_key,
+                                            auth_token=self.token,
+                                            user_id=self.flickr_user_id,
+                                            photoset_id=pid)
 
         if self.__test_failure(rsp):
             return None
@@ -527,7 +527,7 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
                      do_not_redownload, overwrite_photos):
     """Back photosets up"""
 
-    photosets = Unflickr.get_photosetList()
+    photosets = unflickr.get_photoset_list()
     if photosets == None:
         print 'No photosets found'
         sys.exit(0)
@@ -545,7 +545,7 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
                                  photoset.title[0].text.encode('utf-8'))
 
         # Get Metadata
-        info = Unflickr.get_photosetInfo(pid, unflickr.fapi.photosets_getInfo)
+        info = unflickr.get_photoset_info(pid, unflickr.fapi.photosets_getInfo)
 
         if info == None:
             print 'Failed!'
@@ -554,8 +554,8 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
             file_write(unflickr.dryrun, target_dst, 'set_' + pid + '_info.xml',
                        info)
 
-        photos = Unflickr.get_photosetInfo(pid, 
-                                           unflickr.fapi.photosets_get_photos)
+        photos = unflickr.get_photoset_info(pid, 
+                                            unflickr.fapi.photosets_getPhotos)
         if photos == None:
             print 'Failed!'
         else:
@@ -563,7 +563,7 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
             file_write(unflickr.dryrun, target_dst,
                        'set_' + pid + '_photos.xml', photos)
 
-        photos = Unflickr.get_photosetPhotos(pid)
+        photos = unflickr.get_photoset_photos(pid)
 
         if photos == None:
             print 'No photos found in this photoset'
@@ -592,7 +592,7 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
                                                    unflickr,
                                                    target_dst,
                                                    hash_level,
-                                                   get_photos,
+                                                   getPhotos,
                                                    do_not_redownload,
                                                    overwrite_photos)
                     downloader.start()
