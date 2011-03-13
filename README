@@ -8,7 +8,7 @@ Based on Offlickr2 <https://github.com/hugoh/Offlickr2>
 INSTALATION
 -----------
 
- $ sudo easy_install offlickr-py
+ sudo easy_install -U unflickr
 
 USAGE
 -----
