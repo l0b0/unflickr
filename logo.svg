@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="300" height="90">
+    <g>
+        <circle cx="25" cy="24.5" r="20" style="fill:#ff007f"/>
+        <circle cx="25" cy="65.5" r="20" style="fill:#00f"/>
+    </g>
+    <text x="45" y="70" style="font-size:66px;font-family:Sans">unflickr</text>
+</svg>
