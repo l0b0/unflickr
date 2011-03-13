@@ -17,12 +17,20 @@ import threading
 # http://beej.us/flickr/flickrapi/
 from flickrapi import FlickrAPI
 
-__version__ = '0.22 - 2009-03-20'
+__credits__ = ['Beraldo Leal', 'Daniel Drucker', 'Hugo Haas', 'Victor Engmark']
+__author__ = ', '.join(__credits__)
+__copyright__ = 'Copyright (C) 2010-2011 %s' % __author__
+__maintainer__ = 'Victor Engmark'
+__email__ = 'victor.engmark@gmail.com'
+__license__ = 'GPL v2'
+__url__ = 'https://github.com/l0b0/unflickr'
+__version__ = '0.1'
+
 MAX_TIME = '9999999999'
 
 # Gotten from Flickr
-FLICKR_API_KEY = '1391fcd0a9780b247cd6a101272acf71'
-FLICKR_SECRET = 'fd221d0336de3b6d'
+FLICKR_API_KEY = 'f2a448d4ea223b73dfd76498bb35baac'
+FLICKR_SECRET = 'ccd6d04d87ee8473'
 
 
 class Unflickr:
@@ -63,7 +71,6 @@ class Unflickr:
             return True
         else:
             return False
-
 
     def get_photo_list(self, date_low, date_high):
         """Returns a list of photo given a time frame"""
@@ -210,7 +217,7 @@ class Unflickr:
             print 'Requesting metadata for photo %s' % pid
 
         rsp = self.fapi.photos_getInfo(api_key=self.flickr_api_key,
-                                       auth_token=self.token, 
+                                       auth_token=self.token,
                                        photo_id=pid)
         if self.__test_failure(rsp):
             return None
@@ -229,7 +236,7 @@ class Unflickr:
 
         rsp = \
             self.fapi.photos_comments_getList(api_key=self.flickr_api_key,
-                                              auth_token=self.token, 
+                                              auth_token=self.token,
                                               photo_id=pid)
         if self.__test_failure(rsp):
             return None
@@ -244,7 +251,7 @@ class Unflickr:
         """Returns a string with is a list of available sizes for a photo"""
 
         rsp = self.fapi.photos_getSizes(api_key=self.flickr_api_key,
-                                        auth_token=self.token, 
+                                        auth_token=self.token,
                                         photo_id=pid)
         if self.__test_failure(rsp):
             return None
@@ -292,7 +299,7 @@ class Unflickr:
             cmd = 'wget -q -t 0 -T 120 -w 10 -c -O %s %s' % (tmpfile, url)
             os.system(cmd)
         else:
-            urllib.urlretrieve(url, tmpfile, 
+            urllib.urlretrieve(url, tmpfile,
                                reporthook=self.__download_report_hook)
 
         os.rename(tmpfile, '%s/%s' % (target, filename))
@@ -346,7 +353,7 @@ def file_write(dryrun, directory, filename, string):
 
 class PhotoBackupThread(threading.Thread):
 
-    def __init__(self, sem, index, total, uid, title, unflickr, target, 
+    def __init__(self, sem, index, total, uid, title, unflickr, target,
                  hash_level, get_photos, do_not_redownload, overwrite_photos):
         self.sem = sem
         self.index = index
@@ -480,7 +487,7 @@ def backup_photos(threads, unflickr, target, hash_level, date_low, date_high,
                          overwrite_photos)
 
 
-def backup_location(unflickr, target, hash_level, date_high, 
+def backup_location(unflickr, target, hash_level, date_high,
                     do_not_redownload):
     """Back photo locations up for a particular time range"""
 
@@ -518,7 +525,7 @@ def backup_location(unflickr, target, hash_level, date_high,
         if location_permission == None:
             print 'Failed!'
         else:
-            file_write(unflickr.dryrun, target_dst, 
+            file_write(unflickr.dryrun, target_dst,
                        pid + '-location-permissions.xml',
                        location_permission)
 
@@ -554,7 +561,7 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
             file_write(unflickr.dryrun, target_dst, 'set_' + pid + '_info.xml',
                        info)
 
-        photos = unflickr.get_photoset_info(pid, 
+        photos = unflickr.get_photoset_info(pid,
                                             unflickr.fapi.photosets_getPhotos)
         if photos == None:
             print 'Failed!'
@@ -570,7 +577,7 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
         else:
             total = len(photos)
             print 'Backing up', total, 'photos'
-            
+
             if threads > 1:
                 concurrent_threads = threading.Semaphore(threads)
 
@@ -592,7 +599,7 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
                                                    unflickr,
                                                    target_dst,
                                                    hash_level,
-                                                   getPhotos,
+                                                   get_photos,
                                                    do_not_redownload,
                                                    overwrite_photos)
                     downloader.start()
@@ -601,9 +608,6 @@ def backup_photosets(threads, unflickr, get_photos, target, hash_level,
                                  target_dst, hash_level, unflickr,
                                  do_not_redownload, get_photos,
                                  overwrite_photos)
-
-
-        # Do we want the picture too?
 
 
 def target_dir(target, hash_level, uid):
@@ -636,7 +640,6 @@ def main():
     dryrun = False
 
     # Parse command line
-
     try:
         (opts, args) = getopt.getopt(sys.argv[1:],
                 'hvponNLswf:t:d:i:c:l:', ['help'])
